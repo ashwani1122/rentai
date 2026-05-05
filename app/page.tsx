@@ -1,65 +1,84 @@
-import Image from "next/image";
+
+import Link from "next/link";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="page">
+      <section className="hero container">
+        <div className="hero-grid">
+          <div>
+            <span className="badge">AI access marketplace</span>
+            <h1 className="h1">
+              Rent AI API time. Sell unused credits. Stay in control.
+            </h1>
+            <p className="lead">
+              RentAI lets sellers monetize idle API access and lets buyers rent
+              access by the hour through a clean marketplace and dashboard flow.
+            </p>
+
+            <div className="actions">
+              <Link className="btn btn-primary" href="/marketplace">
+                Browse marketplace
+              </Link>
+              <Link className="btn" href="/dashboard/seller-tokens">
+                Open dashboard
+              </Link>
+            </div>
+          </div>
+
+          <div className="card hero-card">
+            <div className="grid-2">
+              <div className="card stat">
+                <div className="small">Average hourly price</div>
+                <div className="kpi">$3.90</div>
+              </div>
+              <div className="card stat">
+                <div className="small">Active rentals</div>
+                <div className="kpi">128</div>
+              </div>
+              <div className="card stat">
+                <div className="small">Seller earnings</div>
+                <div className="kpi">$12.4k</div>
+              </div>
+              <div className="card stat">
+                <div className="small">Supported providers</div>
+                <div className="kpi">4</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+      </section>
+
+      <section className="section container">
+        <div className="grid-3">
+          <div className="card panel">
+            <div className="badge">For sellers</div>
+            <h3>List token slots</h3>
+            <p className="small">
+              Add provider keys, set hourly price, define max duration, and
+              manage activity status.
+            </p>
+          </div>
+
+          <div className="card panel">
+            <div className="badge">For buyers</div>
+            <h3>Rent by the hour</h3>
+            <p className="small">
+              Compare providers, balance, price, and expiry before starting a
+              rental and checkout flow.
+            </p>
+          </div>
+
+          <div className="card panel">
+            <div className="badge">Protected usage</div>
+            <h3>Proxy-based access</h3>
+            <p className="small">
+              Use time-limited access through a controlled backend flow instead
+              of exposing raw seller keys.
+            </p>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

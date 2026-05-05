@@ -1,0 +1,185 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum AIProvider {
+  OPENAI
+  ANTHROPIC
+  XAI
+  GOOGLE
+  OTHER
+}
+
+enum RentalStatus {
+  PENDING_PAYMENT
+  ACTIVE
+  EXPIRED
+  COMPLETED
+  CANCELLED
+}
+
+enum PaymentStatus {
+  PENDING
+  SUCCEEDED
+  FAILED
+  REFUNDED
+}
+
+enum PayoutStatus {
+  PENDING
+  PROCESSING
+  PAID
+  FAILED
+  REVERSED
+}
+
+model User {
+  id              String        @id @default(cuid())
+  clerkId         String        @unique
+  email           String        @unique
+  name            String?
+  stripeAccountId String?       @unique
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+
+  sellerTokens    SellerToken[]
+  rentals         Rental[]      @relation("BuyerRentals")
+  soldRentals     Rental[]      @relation("SellerRentals")
+  payouts         Payout[]      @relation("SellerPayouts")
+
+  @@index([email])
+  @@index([clerkId])
+}
+
+model SellerToken {
+  id               String        @id @default(cuid())
+  userId           String
+  provider         AIProvider
+  encryptedKey     String
+  keyLabel         String?
+  balance          Int?
+  pricePerHour     Decimal       @db.Decimal(10, 2)
+  maxDurationHours Int           @default(24)
+  isActive         Boolean       @default(true)
+  expiresAt        DateTime?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  user             User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rentals          Rental[]
+
+  @@index([userId])
+  @@index([provider])
+  @@index([isActive])
+  @@index([expiresAt])
+  @@index([isActive, expiresAt])
+}
+
+model Rental {
+  id               String              @id @default(cuid())
+  buyerId          String
+  sellerTokenId    String
+  sellerUserId     String
+  startTime        DateTime            @default(now())
+  endTime          DateTime
+  totalAmount      Decimal             @db.Decimal(10, 2)
+  platformFee      Decimal             @db.Decimal(10, 2)
+  sellerAmount     Decimal             @db.Decimal(10, 2)
+  status           RentalStatus        @default(PENDING_PAYMENT)
+  proxyTokenHash   String?             @unique
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+
+  buyer            User                @relation("BuyerRentals", fields: [buyerId], references: [id], onDelete: Cascade)
+  sellerToken      SellerToken         @relation(fields: [sellerTokenId], references: [id], onDelete: Cascade)
+  seller           User                @relation("SellerRentals", fields: [sellerUserId], references: [id], onDelete: Cascade)
+  payments         Payment[]
+  accessTokens     RentalAccessToken[]
+  usageLogs        UsageLog[]
+  payout           Payout?
+
+  @@index([buyerId])
+  @@index([sellerUserId])
+  @@index([sellerTokenId])
+  @@index([status])
+  @@index([endTime])
+  @@index([createdAt])
+  @@index([buyerId, status])
+  @@index([sellerUserId, status])
+  @@index([status, endTime])
+}
+
+model RentalAccessToken {
+  id          String      @id @default(cuid())
+  rentalId     String
+  tokenHash    String      @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime    @default(now())
+
+  rental       Rental      @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([expiresAt])
+}
+
+model UsageLog {
+  id             String      @id @default(cuid())
+  rentalId       String
+  provider       AIProvider
+  endpoint       String
+  requestCount   Int         @default(1)
+  inputTokens    Int?
+  outputTokens   Int?
+  estimatedCost  Decimal?    @db.Decimal(10, 4)
+  createdAt      DateTime    @default(now())
+
+  rental         Rental      @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([provider])
+  @@index([createdAt])
+  @@index([rentalId, createdAt])
+}
+
+model Payment {
+  id                    String         @id @default(cuid())
+  rentalId              String
+  amount                Decimal        @db.Decimal(10, 2)
+  polarOrderId          String?        @unique
+  polarCheckoutId       String?        @unique
+  externalPaymentId     String?        @unique
+  status                PaymentStatus  @default(PENDING)
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+
+  rental                Rental         @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+
+  @@index([rentalId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Payout {
+  id                 String         @id @default(cuid())
+  rentalId           String         @unique
+  sellerId           String
+  amount             Decimal        @db.Decimal(10, 2)
+  platformFee        Decimal        @db.Decimal(10, 2)
+  status             PayoutStatus   @default(PENDING)
+  externalPayoutId   String?        @unique
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+
+  rental             Rental         @relation(fields: [rentalId], references: [id], onDelete: Cascade)
+  seller             User           @relation("SellerPayouts", fields: [sellerId], references: [id], onDelete: Cascade)
+
+  @@index([sellerId])
+  @@index([status])
+  @@index([createdAt])
+}
